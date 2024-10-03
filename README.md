@@ -1,13 +1,5 @@
 # Unofficial nightly builds of Zed for Windows
 
-## Installation
-
-Install using [Scoop](https://scoop.sh/)
-
-```
-scoop bucket add versions
-scoop install versions/zed-nightly
-```
 
 ## Is it safe?
 
