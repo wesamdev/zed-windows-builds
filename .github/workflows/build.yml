@@ -2,7 +2,7 @@ name: Build Zed Nightly
 
 on:
   schedule:
-    - cron: "0 */2 * * *" # Runs every hour at the start of the hour
+    - cron: "0 * * * *" # Runs every hour at the start of the hour
   push:
     branches:
       - main
@@ -40,6 +40,25 @@ jobs:
           name: zed-release
           path: target/release/zed.exe
 
+      # Inno Setup section
+      - name: Install Inno Setup
+        run: choco install innosetup --yes
+
+      - name: Extract version from GitHub tag
+        id: extract_version
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+      - name: Build setup.exe with Inno Setup
+        run: |
+          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" zed-installer.iss /DVersion=${{ env.RELEASE_VERSION }}
+        shell: cmd
+
+      - name: Archive setup.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: zed-setup
+          path: setup.exe
+
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -50,21 +69,21 @@ jobs:
       - name: Download release artifact
         uses: actions/download-artifact@v4
         with:
-          name: zed-release
-          path: zed-release
+          name: zed-setup
+          path: zed-setup
 
-      - name: Get the current date
+      - name: Get the current date and time
         id: date
-        run: echo "CURRENT_DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
+        run: echo "CURRENT_DATE=$(date +'%Y%m%d%H')" >> $GITHUB_ENV
 
       - name: Zip the release artifact
-        run: zip -r zed-windows.zip zed-release/*
+        run: zip -r zed-windows.zip zed-setup/*
 
       - name: Upload release build artifact to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           name: ${{ env.CURRENT_DATE }}
-          tag_name: ${{ env.CURRENT_DATE }}
+          tag_name: ${{ env.RELEASE_VERSION }}
           draft: false
           make_latest: true
           files: zed-windows.zip
