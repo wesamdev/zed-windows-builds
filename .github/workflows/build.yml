@@ -42,7 +42,14 @@ jobs:
 
       # Inno Setup section
       - name: Install Inno Setup
-        run: choco install innosetup --yes
+        run: |
+          choco install innosetup --yes
+          choco list --local-only innosetup
+
+      - name: Find Inno Setup Path
+        id: inno_path
+        run: |
+          echo "INNO_PATH=$(where ISCC.exe)" >> $GITHUB_ENV
 
       - name: Extract version from GitHub tag
         id: extract_version
@@ -50,7 +57,7 @@ jobs:
 
       - name: Build setup.exe with Inno Setup
         run: |
-          "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" zed-installer.iss /DVersion=${{ env.RELEASE_VERSION }}
+          ${{ env.INNO_PATH }} zed-installer.iss /DVersion=${{ env.RELEASE_VERSION }}
         shell: cmd
 
       - name: Archive setup.exe
