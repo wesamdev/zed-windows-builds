@@ -55,7 +55,7 @@ jobs:
 
       - name: Get the current date
         id: date
-        run: echo "CURRENT_DATE=$(date +'%Y%m%d%h')" >> $GITHUB_ENV
+        run: echo "CURRENT_DATE=$(date +'%Y%m%d%H')" >> $GITHUB_ENV
 
       - name: Zip the release artifact
         run: zip -r zed-windows.zip zed-release/*
